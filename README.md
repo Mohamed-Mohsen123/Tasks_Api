@@ -149,9 +149,31 @@ DELETE /tasksApi/:task_id
 
 ---
 
-## Middleware
+## Validation Rules
 
-Request bodies are validated before reaching the controller using `express-validator` schemas defined in `tasks.middlwares.js`. If validation fails, the request is rejected with a descriptive error response before any business logic runs.
+Powered by [`express-validator`](https://express-validator.github.io/). Validation runs before any controller logic via `handleValidationErrors` middleware.
+
+| Endpoint           | Field             | Rules                      |
+| ------------------ | ----------------- | -------------------------- |
+| `POST /`           | `title` (body)    | Required, min 3 characters |
+| `PATCH /:task_id`  | `task_id` (param) | Positive integer           |
+|                    | `title` (body)    | Required, min 3 characters |
+| `DELETE /:task_id` | `task_id` (param) | Positive integer           |
+
+**Validation error response** `400 Bad Request`
+
+```json
+{
+  "errors": [
+    {
+      "type": "field",
+      "msg": "Title must be at least 3 characters long",
+      "path": "title",
+      "location": "body"
+    }
+  ]
+}
+```
 
 ---
 
