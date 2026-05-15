@@ -13,6 +13,7 @@ A simple Express.js REST API for managing tasks.
 ## Running the Server
 
 Start the server:
+
 ```bash
 node script.js
 ```
@@ -22,6 +23,7 @@ The server will run on `http://localhost:3000`
 ## API Endpoints
 
 ### 1. Get All Tasks
+
 - **Endpoint:** `GET /tasksApi/`
 - **Description:** Retrieve all tasks
 - **Response:**
@@ -39,6 +41,7 @@ The server will run on `http://localhost:3000`
   ```
 
 ### 2. Create a New Task
+
 - **Endpoint:** `POST /tasksApi/`
 - **Description:** Add a new task
 - **Request Body:**
@@ -61,6 +64,7 @@ The server will run on `http://localhost:3000`
   ```
 
 ### 3. Delete a Task
+
 - **Endpoint:** `DELETE /tasksApi/:task_id`
 - **Description:** Delete a task by ID
 - **Parameters:**
@@ -79,6 +83,7 @@ The server will run on `http://localhost:3000`
   ```
 
 ### 4. Update a Task
+
 - **Endpoint:** `PATCH /tasksApi/:task_id`
 - **Description:** Update a task's title by ID
 - **Parameters:**
@@ -125,6 +130,7 @@ curl -X DELETE http://localhost:3000/tasksApi/1
 ## Default Tasks
 
 The API comes with three default tasks:
+
 1. Clean the house
 2. Call your aunt
 3. Make the bed
