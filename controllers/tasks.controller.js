@@ -5,7 +5,7 @@ const getTasks = (req, res) => {
   res.status(200).json(tasks);
 };
 
-// Get Specific task by id
+// Get specific task by id
 const getTask = (req, res) => {
   const taskId = req.params.task_id;
   const task = tasks.find((task) => task.id === taskId);
@@ -13,6 +13,19 @@ const getTask = (req, res) => {
   if (!task) {
     return res.status(400).json({
       err: "task not found (wrong id number)",
+    });
+  }
+  res.status(200).json(task);
+};
+
+// Get specific task by title
+const getTaskTitle = (req, res) => {
+  const taskTitle = req.params.task_title;
+  const task = tasks.find((task) => task.title === taskTitle);
+
+  if (!task) {
+    return res.status(400).json({
+      err: "task not found (wrong title)",
     });
   }
   res.status(200).json(task);
@@ -69,10 +82,32 @@ const updateTask = (req, res) => {
   res.status(200).json({ msg: "task updated successfully!" });
 };
 
+// PUT - Replace a task by ID
+const putTask = (req, res) => {
+  const taskId = req.params.task_id;
+
+  const taskIndex = tasks.findIndex((task) => task.id === taskId);
+
+  if (taskIndex === -1) {
+    return res.status(400).json({
+      err: "task not found (wrong id number)",
+    });
+  }
+  
+  tasks[taskIndex] = {
+    id: taskId,
+    ...req.body
+  };
+  
+  res.status(200).json({ msg: "task replaced successfully!" });
+};
+
 module.exports = {
   getTasks,
   getTask,
+  getTaskTitle,
   createTask,
   deleteTask,
   updateTask,
+  putTask,
 };

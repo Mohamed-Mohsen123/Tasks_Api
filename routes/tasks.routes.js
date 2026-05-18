@@ -7,6 +7,8 @@ const {
   createTask,
   deleteTask,
   updateTask,
+  putTask,
+  getTaskTitle,
 } = require("../controllers/tasks.controller");
 const {
   validationSchemas,
@@ -19,6 +21,12 @@ router
 
 router
   .get("/:task_id", validationSchemas.getTask, handleValidationErrors, getTask)
+  .get(
+    "/title/:task_title",
+    validationSchemas.getTaskTitle,
+    handleValidationErrors,
+    getTaskTitle,
+  )
   .delete(
     "/:task_id",
     validationSchemas.deleteTask,
@@ -30,6 +38,12 @@ router
     validationSchemas.updateTask,
     handleValidationErrors,
     updateTask,
+  )
+  .put(
+    "/:task_id",
+    validationSchemas.putTask,
+    handleValidationErrors,
+    putTask,
   );
 
 module.exports = router;
