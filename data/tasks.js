@@ -1,3 +1,4 @@
+const crypto = require("crypto");
 let tasks = [
   {
     id: crypto.randomUUID(),
