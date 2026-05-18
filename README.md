@@ -43,13 +43,13 @@ npm install
 ### Running the Server
 
 ```bash
-node script.js
+node server.js
 ```
 
 The server starts on **port 3000** by default.
 
 ```
-Example app listening on port 3000!
+Server running on port {port number}!
 ```
 
 ---
