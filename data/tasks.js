@@ -1,14 +1,14 @@
 let tasks = [
   {
-    id: 1,
+    id: crypto.randomUUID(),
     title: "Clean the house",
   },
   {
-    id: 2,
+    id: crypto.randomUUID(),
     title: "Call your aunt",
   },
   {
-    id: 3,
+    id: crypto.randomUUID(),
     title: "make the bed",
   },
 ];

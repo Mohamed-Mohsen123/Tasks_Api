@@ -2,7 +2,20 @@ let { tasks } = require("../data/tasks.js");
 
 // GET all tasks
 const getTasks = (req, res) => {
-  res.json(tasks);
+  res.status(200).json(tasks);
+};
+
+// Get Specific task by id
+const getTask = (req, res) => {
+  const taskId = req.params.task_id;
+  const task = tasks.find((task) => task.id === taskId);
+
+  if (!task) {
+    return res.status(400).json({
+      err: "task not found (wrong id number)",
+    });
+  }
+  res.status(200).json(task);
 };
 
 // POST - Create a new task
@@ -13,7 +26,7 @@ const createTask = (req, res) => {
     });
   }
   let task = {
-    id: Math.max(...tasks.map((t) => t.id), 0) + 1,
+    id: crypto.randomUUID(),
     ...req.body,
   };
   tasks.push(task);
@@ -24,7 +37,7 @@ const createTask = (req, res) => {
 
 // DELETE - Delete a task by ID
 const deleteTask = (req, res) => {
-  const taskId = +req.params.task_id;
+  const taskId = req.params.task_id;
 
   const task = tasks.find((task) => task.id === taskId);
 
@@ -43,7 +56,7 @@ const deleteTask = (req, res) => {
 
 // PATCH - Update a task by ID
 const updateTask = (req, res) => {
-  const taskId = +req.params.task_id;
+  const taskId = req.params.task_id;
 
   const task = tasks.find((task) => task.id === taskId);
 
@@ -58,6 +71,7 @@ const updateTask = (req, res) => {
 
 module.exports = {
   getTasks,
+  getTask,
   createTask,
   deleteTask,
   updateTask,

@@ -105,6 +105,7 @@ POST /tasksApi/
 
 ```
 PATCH /tasksApi/:task_id
+PUT /tasksApi/:task_id
 ```
 
 **Request Body**
@@ -157,6 +158,7 @@ Powered by [`express-validator`](https://express-validator.github.io/). Validati
 | ------------------ | ----------------- | -------------------------- |
 | `POST /`           | `title` (body)    | Required, min 3 characters |
 | `PATCH /:task_id`  | `task_id` (param) | Positive integer           |
+| `PUT /:task_id`    | `task_id` (param) | Positive integer           |
 |                    | `title` (body)    | Required, min 3 characters |
 | `DELETE /:task_id` | `task_id` (param) | Positive integer           |
 

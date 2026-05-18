@@ -3,6 +3,7 @@ const router = express.Router();
 
 const {
   getTasks,
+  getTask,
   createTask,
   deleteTask,
   updateTask,
@@ -17,6 +18,7 @@ router
   .post("/", validationSchemas.createTask, handleValidationErrors, createTask);
 
 router
+  .get("/:task_id", validationSchemas.getTask, handleValidationErrors, getTask)
   .delete(
     "/:task_id",
     validationSchemas.deleteTask,

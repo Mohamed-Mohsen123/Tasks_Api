@@ -18,11 +18,21 @@ const validationSchemas = {
       .isLength({ min: 3 })
       .withMessage("Title must be at least 3 characters long"),
   ],
-
+  getTask: [
+    param("task_id")
+      .trim()
+      .notEmpty()
+      .withMessage("ID is required")
+      .isUUID()
+      .withMessage("Invalid UUID"),
+  ],
   updateTask: [
     param("task_id")
-      .isInt({ min: 1 })
-      .withMessage("Task ID must be a positive integer"),
+      .trim()
+      .notEmpty()
+      .withMessage("ID is required")
+      .isUUID()
+      .withMessage("Invalid UUID"),
     body("title")
       .trim()
       .notEmpty()
@@ -33,8 +43,11 @@ const validationSchemas = {
 
   deleteTask: [
     param("task_id")
-      .isInt({ min: 1 })
-      .withMessage("Task ID must be a positive integer"),
+      .trim()
+      .notEmpty()
+      .withMessage("ID is required")
+      .isUUID()
+      .withMessage("Invalid UUID"),
   ],
 };
 
