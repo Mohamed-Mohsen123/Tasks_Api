@@ -1,6 +1,6 @@
 # Tasks API
 
-A simple RESTful API built with **Node.js** and **Express** for managing tasks. Supports creating, reading, updating, and deleting tasks with input validation middleware.
+A RESTful API built with **Node.js** and **Express** for managing tasks. Supports creating, reading, updating, and deleting tasks with input validation middleware and a dedicated service layer.
 
 ---
 
@@ -9,13 +9,15 @@ A simple RESTful API built with **Node.js** and **Express** for managing tasks. 
 ```
 tasks-api/
 ├── controllers/
-│   └── tasks.controller.js   # Request handlers (CRUD logic)
+│   └── tasks.controller.js   # Request handlers (delegates to services)
 ├── data/
 │   └── tasks.js              # In-memory task data store
 ├── middlewares/
 │   └── tasks.middlwares.js   # Validation schemas & error handling
 ├── routes/
 │   └── tasks.routes.js       # Route definitions
+├── services/
+│   └── tasks.services.js     # Business logic & data operations
 ├── script.js                 # App entry point
 ├── package.json
 └── README.md
@@ -66,9 +68,49 @@ GET /tasksApi/
 
 ```json
 [
-  { "id": 1, "title": "Buy groceries" },
-  { "id": 2, "title": "Write report" }
+  { "id": "uuid", "title": "Buy groceries" },
+  { "id": "uuid", "title": "Write report" }
 ]
+```
+
+---
+
+### Get a Task by ID
+
+```
+GET /tasksApi/:task_id
+```
+
+**Response** `200 OK`
+
+```json
+{ "id": "uuid", "title": "Buy groceries" }
+```
+
+**Error** `400 Bad Request` — if the task ID is not found
+
+```json
+{ "err": "task not found (wrong id number)" }
+```
+
+---
+
+### Get a Task by Title
+
+```
+GET /tasksApi/title/:task_title
+```
+
+**Response** `200 OK`
+
+```json
+{ "id": "uuid", "title": "Buy groceries" }
+```
+
+**Error** `400 Bad Request` — if the title is not found
+
+```json
+{ "err": "task not found (wrong title)" }
 ```
 
 ---
@@ -101,12 +143,13 @@ POST /tasksApi/
 
 ---
 
-### Update a Task
+### Update a Task (Partial)
 
 ```
 PATCH /tasksApi/:task_id
-PUT /tasksApi/:task_id
 ```
+
+Updates only the `title` of the task.
 
 **Request Body**
 
@@ -120,6 +163,36 @@ PUT /tasksApi/:task_id
 
 ```json
 { "msg": "task updated successfully!" }
+```
+
+**Error** `400 Bad Request` — if the task ID is not found
+
+```json
+{ "err": "task not found (wrong id number)" }
+```
+
+---
+
+### Replace a Task (Full)
+
+```
+PUT /tasksApi/:task_id
+```
+
+Fully replaces the task data while preserving the original ID.
+
+**Request Body**
+
+```json
+{
+  "title": "Replaced task title"
+}
+```
+
+**Response** `200 OK`
+
+```json
+{ "msg": "task replaced successfully!" }
 ```
 
 **Error** `400 Bad Request` — if the task ID is not found
@@ -154,13 +227,16 @@ DELETE /tasksApi/:task_id
 
 Powered by [`express-validator`](https://express-validator.github.io/). Validation runs before any controller logic via `handleValidationErrors` middleware.
 
-| Endpoint           | Field             | Rules                      |
-| ------------------ | ----------------- | -------------------------- |
-| `POST /`           | `title` (body)    | Required, min 3 characters |
-| `PATCH /:task_id`  | `task_id` (param) | Positive integer           |
-| `PUT /:task_id`    | `task_id` (param) | Positive integer           |
-|                    | `title` (body)    | Required, min 3 characters |
-| `DELETE /:task_id` | `task_id` (param) | Positive integer           |
+| Endpoint                    | Field              | Rules                      |
+| --------------------------- | ------------------ | -------------------------- |
+| `POST /`                    | `title` (body)     | Required, min 3 characters |
+| `GET /:task_id`             | `task_id` (param)  | Valid UUID                 |
+| `GET /title/:task_title`    | `task_title` (param) | Required                 |
+| `PATCH /:task_id`           | `task_id` (param)  | Valid UUID                 |
+|                             | `title` (body)     | Required, min 3 characters |
+| `PUT /:task_id`             | `task_id` (param)  | Valid UUID                 |
+|                             | `title` (body)     | Required, min 3 characters |
+| `DELETE /:task_id`          | `task_id` (param)  | Valid UUID                 |
 
 **Validation error response** `400 Bad Request`
 
@@ -182,4 +258,5 @@ Powered by [`express-validator`](https://express-validator.github.io/). Validati
 ## Notes
 
 - Tasks are stored **in-memory** — data resets when the server restarts. To persist data, replace `data/tasks.js` with a database integration.
-- Task IDs are auto-incremented based on the current maximum ID in the store.
+- Task IDs are generated using `crypto.randomUUID()`.
+- The API follows a **Service Layer** pattern — controllers handle HTTP concerns while services contain all business logic.
