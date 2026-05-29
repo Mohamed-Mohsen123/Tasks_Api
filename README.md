@@ -1,6 +1,6 @@
 # Tasks API
 
-A RESTful API built with **Node.js** and **Express** for managing tasks. Supports creating, reading, updating, and deleting tasks with input validation middleware and a dedicated service layer. Now includes a **MongoDB Atlas** connection for future persistence.
+A RESTful API built with **Node.js** and **Express** for managing tasks. Supports creating, reading, updating, and deleting tasks with input validation middleware and a dedicated service layer. Uses **MongoDB** with **Mongoose** ODM for persistent data storage and **crypto UUID** for unique task identifiers.
 
 ---
 
@@ -10,16 +10,16 @@ A RESTful API built with **Node.js** and **Express** for managing tasks. Support
 tasks-api/
 ├── controllers/
 │   └── tasks.controller.js   # Request handlers (delegates to services)
-├── data/
-│   └── tasks.js              # In-memory task data store
+├── model/
+│   └── tasks.model.js        # Mongoose schema & model definition
 ├── middlewares/
 │   └── tasks.middlwares.js   # Validation schemas & error handling
 ├── routes/
 │   └── tasks.routes.js       # Route definitions
 ├── services/
-│   └── tasks.services.js     # Business logic & data operations
-├── server.js                 # App entry point
-├── .env                      # Environment variables (PORT)
+│   └── tasks.services.js     # Business logic & database operations
+├── server.js                 # App entry point & MongoDB connection
+├── .env                      # Environment variables (PORT, MONGO_URI)
 ├── package.json
 └── README.md
 ```
@@ -48,33 +48,40 @@ Create a `.env` file in the root directory:
 
 ```env
 PORT=3000
+MONGO_URI=mongodb://localhost:27017/tasks
+```
+
+For MongoDB Atlas, use a connection string:
+
+```env
+MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/Tasks_DB?retryWrites=true&w=majority
 ```
 
 ### Running the Server
 
 ```bash
 node server.js
-node server.js
 ```
 
-The server starts on the port defined in `.env` (default **3000**).
+The server starts on the port defined in `.env` (default **3000**) and connects to MongoDB:
 
 ```
-Connected successfully to server
+MongoDB connected successfully
 Server running on port 3000
-Server running on port {port number}!
 ```
 
 ---
 
 ## Tech Stack
 
-| Package             | Version | Purpose                      |
-| ------------------- | ------- | ---------------------------- |
-| `express`           | ^5.2.1  | HTTP server & routing        |
-| `express-validator` | ^7.3.2  | Request validation           |
-| `mongodb`           | ^7.2.0  | MongoDB Atlas driver         |
-| `dotenv`            | ^17.4.2 | Environment variable loading |
+| Package             | Version  | Purpose                         |
+| ------------------- | -------- | ------------------------------- |
+| `express`           | ^5.2.1   | HTTP server & routing           |
+| `express-validator` | ^7.3.2   | Request validation              |
+| `mongoose`          | ^8.x.x   | MongoDB ODM & schema validation |
+| `mongodb`           | ^6.x.x   | MongoDB driver                  |
+| `dotenv`            | ^17.4.2  | Environment variable loading    |
+| `crypto`            | Built-in | UUID generation for task IDs    |
 
 ---
 
@@ -281,7 +288,9 @@ Powered by [`express-validator`](https://express-validator.github.io/). Validati
 
 ## Notes
 
-- Tasks are currently stored **in-memory** — data resets when the server restarts. The MongoDB Atlas connection is in place in `server.js`; replace the in-memory data store in `services/tasks.services.js` with DB calls to enable full persistence.
-- Task IDs are generated using `crypto.randomUUID()`.
-- The API follows a **Service Layer** pattern — controllers handle HTTP concerns while services contain all business logic.
-- Port is configurable via the `PORT` variable in `.env`.
+- **Persistent Storage**: Tasks are stored in MongoDB using Mongoose. Data persists across server restarts.
+- **Task IDs**: Each task has a unique identifier generated using `crypto.randomUUID()` instead of MongoDB's default `_id`.
+- **Service Layer Architecture**: Controllers handle HTTP concerns while services contain all business logic and database operations.
+- **Async Operations**: All service functions are async and return database queries with proper error handling.
+- **Port Configuration**: Port is configurable via the `PORT` variable in `.env`.
+- **Database Connection**: MongoDB connection is established in `server.js` on server startup with automatic error handling.
