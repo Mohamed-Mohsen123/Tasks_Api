@@ -1,59 +1,60 @@
 const crypto = require("crypto");
-let { tasks } = require("../data/tasks.js");
+const Task = require("../model/tasks.model");
 
-function GetAllTasks() {
-  return tasks;
+async function GetAllTasks() {
+  return await Task.find();
 }
 
-function getTask(taskId) {
-  return tasks.find((task) => task.id === taskId);
+async function getTask(taskId) {
+  return await Task.findOne({ id: taskId });
 }
 
-function GetTaskTitle(taskTitle) {
-  return tasks.find((task) => task.title === taskTitle);
+async function GetTaskTitle(taskTitle) {
+  return await Task.findOne({ title: taskTitle });
 }
 
-function createTask(taskData) {
-  if (tasks.find((task) => task.title === taskData.title)) {
+async function createTask(taskData) {
+  const existingTask = await Task.findOne({ title: taskData.title });
+  if (existingTask) {
     return { error: "duplicated title" };
   }
 
-  let task = {
+  const task = new Task({
     id: crypto.randomUUID(),
     ...taskData,
-  };
-  tasks.push(task);
+  });
+  await task.save();
   return { success: true, task };
 }
 
-function deleteTask(taskId) {
-  const taskIndex = tasks.findIndex((task) => task.id === taskId);
-  if (taskIndex === -1) {
-    return { error: "task not found (wrong id number)" };
-  }
-  tasks.splice(taskIndex, 1);
-  return { success: true };
-}
-
-function updateTask(taskId, taskData) {
-  const task = tasks.find((task) => task.id === taskId);
+async function deleteTask(taskId) {
+  const task = await Task.findOneAndDelete({ id: taskId });
   if (!task) {
     return { error: "task not found (wrong id number)" };
   }
-  task.title = taskData.title;
+  return { success: true };
+}
+
+async function updateTask(taskId, taskData) {
+  const task = await Task.findOneAndUpdate({ id: taskId }, taskData, {
+    new: true,
+  });
+  if (!task) {
+    return { error: "task not found (wrong id number)" };
+  }
   return { success: true, task };
 }
 
-function putTask(taskId, taskData) {
-  const taskIndex = tasks.findIndex((task) => task.id === taskId);
-  if (taskIndex === -1) {
+async function putTask(taskId, taskData) {
+  const task = await Task.findOneAndUpdate(
+    { id: taskId },
+    { id: crypto.randomUUID(), ...taskData },
+    { new: true },
+  );
+  if (!task) {
     return { error: "task not found (wrong id number)" };
   }
-  tasks[taskIndex] = {
-    id: taskId,
-    ...taskData,
-  };
-  return { success: true, task: tasks[taskIndex] };
+  return { success: true, task };
 }
 
 module.exports = {

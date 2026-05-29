@@ -1,15 +1,15 @@
 const tasksServices = require("../services/tasks.services.js");
 
 // GET all tasks
-const getTasks = (req, res) => {
-  const tasks = tasksServices.GetAllTasks();
+const getTasks = async (req, res) => {
+  const tasks = await tasksServices.GetAllTasks();
   res.status(200).json(tasks);
 };
 
 // Get specific task by id
-const getTask = (req, res) => {
+const getTask = async (req, res) => {
   const taskId = req.params.task_id;
-  const task = tasksServices.getTask(taskId);
+  const task = await tasksServices.getTask(taskId);
 
   if (!task) {
     return res.status(404).json({
@@ -20,9 +20,9 @@ const getTask = (req, res) => {
 };
 
 // Get specific task by title
-const getTaskTitle = (req, res) => {
+const getTaskTitle = async (req, res) => {
   const taskTitle = req.params.task_title;
-  const task = tasksServices.GetTaskTitle(taskTitle);
+  const task = await tasksServices.GetTaskTitle(taskTitle);
 
   if (!task) {
     return res.status(404).json({
@@ -33,8 +33,8 @@ const getTaskTitle = (req, res) => {
 };
 
 // POST - Create a new task
-const createTask = (req, res) => {
-  const result = tasksServices.createTask(req.body);
+const createTask = async (req, res) => {
+  const result = await tasksServices.createTask(req.body);
   if (result.error) {
     return res.status(400).json({
       error: result.error,
@@ -44,9 +44,9 @@ const createTask = (req, res) => {
 };
 
 // DELETE - Delete a task by ID
-const deleteTask = (req, res) => {
+const deleteTask = async (req, res) => {
   const taskId = req.params.task_id;
-  const result = tasksServices.deleteTask(taskId);
+  const result = await tasksServices.deleteTask(taskId);
 
   if (result.error) {
     return res.status(404).json({
@@ -60,9 +60,9 @@ const deleteTask = (req, res) => {
 };
 
 // PATCH - Update a task by ID
-const updateTask = (req, res) => {
+const updateTask = async (req, res) => {
   const taskId = req.params.task_id;
-  const result = tasksServices.updateTask(taskId, req.body);
+  const result = await tasksServices.updateTask(taskId, req.body);
 
   if (result.error) {
     return res.status(404).json({
@@ -74,9 +74,9 @@ const updateTask = (req, res) => {
 };
 
 // PUT - Replace a task by ID
-const putTask = (req, res) => {
+const putTask = async (req, res) => {
   const taskId = req.params.task_id;
-  const result = tasksServices.putTask(taskId, req.body);
+  const result = await tasksServices.putTask(taskId, req.body);
 
   if (result.error) {
     return res.status(404).json({
