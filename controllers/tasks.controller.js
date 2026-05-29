@@ -12,8 +12,8 @@ const getTask = (req, res) => {
   const task = tasksServices.getTask(taskId);
 
   if (!task) {
-    return res.status(400).json({
-      err: "task not found (wrong id number)",
+    return res.status(404).json({
+      error: "task not found (wrong id number)",
     });
   }
   res.status(200).json(task);
@@ -25,8 +25,8 @@ const getTaskTitle = (req, res) => {
   const task = tasksServices.GetTaskTitle(taskTitle);
 
   if (!task) {
-    return res.status(400).json({
-      err: "task not found (wrong title)",
+    return res.status(404).json({
+      error: "task not found (wrong title)",
     });
   }
   res.status(200).json(task);
@@ -37,12 +37,10 @@ const createTask = (req, res) => {
   const result = tasksServices.createTask(req.body);
   if (result.error) {
     return res.status(400).json({
-      err: result.error,
+      error: result.error,
     });
   }
-  res.status(200).json({
-    msg: "task added successfully!",
-  });
+  res.status(201).json(result.task);
 };
 
 // DELETE - Delete a task by ID
@@ -51,13 +49,13 @@ const deleteTask = (req, res) => {
   const result = tasksServices.deleteTask(taskId);
 
   if (result.error) {
-    return res.status(400).json({
-      err: result.error,
+    return res.status(404).json({
+      error: result.error,
     });
   }
 
   res.status(200).json({
-    msg: "task deleted successfully!",
+    message: "task deleted successfully!",
   });
 };
 
@@ -67,12 +65,12 @@ const updateTask = (req, res) => {
   const result = tasksServices.updateTask(taskId, req.body);
 
   if (result.error) {
-    return res.status(400).json({
-      err: result.error,
+    return res.status(404).json({
+      error: result.error,
     });
   }
-  
-  res.status(200).json({ msg: "task updated successfully!" });
+
+  res.status(200).json(result.task);
 };
 
 // PUT - Replace a task by ID
@@ -81,12 +79,12 @@ const putTask = (req, res) => {
   const result = tasksServices.putTask(taskId, req.body);
 
   if (result.error) {
-    return res.status(400).json({
-      err: result.error,
+    return res.status(404).json({
+      error: result.error,
     });
   }
-  
-  res.status(200).json({ msg: "task replaced successfully!" });
+
+  res.status(200).json(result.task);
 };
 
 module.exports = {

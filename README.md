@@ -54,6 +54,7 @@ PORT=3000
 
 ```bash
 node server.js
+node server.js
 ```
 
 The server starts on the port defined in `.env` (default **3000**).
@@ -61,18 +62,19 @@ The server starts on the port defined in `.env` (default **3000**).
 ```
 Connected successfully to server
 Server running on port 3000
+Server running on port {port number}!
 ```
 
 ---
 
 ## Tech Stack
 
-| Package             | Version  | Purpose                        |
-| ------------------- | -------- | ------------------------------ |
-| `express`           | ^5.2.1   | HTTP server & routing          |
-| `express-validator` | ^7.3.2   | Request validation             |
-| `mongodb`           | ^7.2.0   | MongoDB Atlas driver           |
-| `dotenv`            | ^17.4.2  | Environment variable loading   |
+| Package             | Version | Purpose                      |
+| ------------------- | ------- | ---------------------------- |
+| `express`           | ^5.2.1  | HTTP server & routing        |
+| `express-validator` | ^7.3.2  | Request validation           |
+| `mongodb`           | ^7.2.0  | MongoDB Atlas driver         |
+| `dotenv`            | ^17.4.2 | Environment variable loading |
 
 ---
 
@@ -109,7 +111,7 @@ GET /tasksApi/:task_id
 { "id": "uuid", "title": "Buy groceries" }
 ```
 
-**Error** `400 Bad Request` — if the task ID is not found
+**Error** `404 Not Found` — if the task ID is not found
 
 ```json
 { "err": "task not found (wrong id number)" }
@@ -129,7 +131,7 @@ GET /tasksApi/title/:task_title
 { "id": "uuid", "title": "Buy groceries" }
 ```
 
-**Error** `400 Bad Request` — if the title is not found
+**Error** `404 Not Found` — if the title is not found
 
 ```json
 { "err": "task not found (wrong title)" }
@@ -157,7 +159,7 @@ POST /tasksApi/
 { "msg": "task added successfully!" }
 ```
 
-**Error** `400 Bad Request` — if the title already exists
+**Error** `409 Conflict` — if the title already exists
 
 ```json
 { "err": "duplicated title" }
@@ -187,7 +189,7 @@ Updates only the `title` of the task.
 { "msg": "task updated successfully!" }
 ```
 
-**Error** `400 Bad Request` — if the task ID is not found
+**Error** `404 Not Found` — if the task ID is not found
 
 ```json
 { "err": "task not found (wrong id number)" }
@@ -217,7 +219,7 @@ Fully replaces the task data while preserving the original ID.
 { "msg": "task replaced successfully!" }
 ```
 
-**Error** `400 Bad Request` — if the task ID is not found
+**Error** `404 Not Found` — if the task ID is not found
 
 ```json
 { "err": "task not found (wrong id number)" }
@@ -237,7 +239,7 @@ DELETE /tasksApi/:task_id
 { "msg": "task deleted successfully!" }
 ```
 
-**Error** `400 Bad Request` — if the task ID is not found
+**Error** `404 Not Found` — if the task ID is not found
 
 ```json
 { "err": "task not found (wrong id number)" }
@@ -249,16 +251,16 @@ DELETE /tasksApi/:task_id
 
 Powered by [`express-validator`](https://express-validator.github.io/). Validation runs before any controller logic via `handleValidationErrors` middleware.
 
-| Endpoint                    | Field                | Rules                      |
-| --------------------------- | -------------------- | -------------------------- |
-| `POST /`                    | `title` (body)       | Required, min 3 characters |
-| `GET /:task_id`             | `task_id` (param)    | Valid UUID                 |
-| `GET /title/:task_title`    | `task_title` (param) | Required                   |
-| `PATCH /:task_id`           | `task_id` (param)    | Valid UUID                 |
-|                             | `title` (body)       | Required, min 3 characters |
-| `PUT /:task_id`             | `task_id` (param)    | Valid UUID                 |
-|                             | `title` (body)       | Required, min 3 characters |
-| `DELETE /:task_id`          | `task_id` (param)    | Valid UUID                 |
+| Endpoint                 | Field                | Rules                      |
+| ------------------------ | -------------------- | -------------------------- |
+| `POST /`                 | `title` (body)       | Required, min 3 characters |
+| `GET /:task_id`          | `task_id` (param)    | Valid UUID                 |
+| `GET /title/:task_title` | `task_title` (param) | Required                   |
+| `PATCH /:task_id`        | `task_id` (param)    | Valid UUID                 |
+|                          | `title` (body)       | Required, min 3 characters |
+| `PUT /:task_id`          | `task_id` (param)    | Valid UUID                 |
+|                          | `title` (body)       | Required, min 3 characters |
+| `DELETE /:task_id`       | `task_id` (param)    | Valid UUID                 |
 
 **Validation error response** `400 Bad Request`
 

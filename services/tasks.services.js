@@ -17,7 +17,7 @@ function createTask(taskData) {
   if (tasks.find((task) => task.title === taskData.title)) {
     return { error: "duplicated title" };
   }
-  
+
   let task = {
     id: crypto.randomUUID(),
     ...taskData,
@@ -51,7 +51,7 @@ function putTask(taskId, taskData) {
   }
   tasks[taskIndex] = {
     id: taskId,
-    ...taskData
+    ...taskData,
   };
   return { success: true, task: tasks[taskIndex] };
 }
