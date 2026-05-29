@@ -1,6 +1,6 @@
 # Tasks API
 
-A RESTful API built with **Node.js** and **Express** for managing tasks. Supports creating, reading, updating, and deleting tasks with input validation middleware and a dedicated service layer.
+A RESTful API built with **Node.js** and **Express** for managing tasks. Supports creating, reading, updating, and deleting tasks with input validation middleware and a dedicated service layer. Now includes a **MongoDB Atlas** connection for future persistence.
 
 ---
 
@@ -18,7 +18,8 @@ tasks-api/
 │   └── tasks.routes.js       # Route definitions
 ├── services/
 │   └── tasks.services.js     # Business logic & data operations
-├── script.js                 # App entry point
+├── server.js                 # App entry point
+├── .env                      # Environment variables (PORT)
 ├── package.json
 └── README.md
 ```
@@ -31,6 +32,7 @@ tasks-api/
 
 - [Node.js](https://nodejs.org/) v14 or higher
 - npm
+- A [MongoDB Atlas](https://www.mongodb.com/atlas) cluster (for DB connection)
 
 ### Installation
 
@@ -40,17 +42,37 @@ cd tasks-api
 npm install
 ```
 
+### Environment Variables
+
+Create a `.env` file in the root directory:
+
+```env
+PORT=3000
+```
+
 ### Running the Server
 
 ```bash
-node script.js
+node server.js
 ```
 
-The server starts on **port 3000** by default.
+The server starts on the port defined in `.env` (default **3000**).
 
 ```
-Example app listening on port 3000!
+Connected successfully to server
+Server running on port 3000
 ```
+
+---
+
+## Tech Stack
+
+| Package             | Version  | Purpose                        |
+| ------------------- | -------- | ------------------------------ |
+| `express`           | ^5.2.1   | HTTP server & routing          |
+| `express-validator` | ^7.3.2   | Request validation             |
+| `mongodb`           | ^7.2.0   | MongoDB Atlas driver           |
+| `dotenv`            | ^17.4.2  | Environment variable loading   |
 
 ---
 
@@ -227,16 +249,16 @@ DELETE /tasksApi/:task_id
 
 Powered by [`express-validator`](https://express-validator.github.io/). Validation runs before any controller logic via `handleValidationErrors` middleware.
 
-| Endpoint                    | Field              | Rules                      |
-| --------------------------- | ------------------ | -------------------------- |
-| `POST /`                    | `title` (body)     | Required, min 3 characters |
-| `GET /:task_id`             | `task_id` (param)  | Valid UUID                 |
-| `GET /title/:task_title`    | `task_title` (param) | Required                 |
-| `PATCH /:task_id`           | `task_id` (param)  | Valid UUID                 |
-|                             | `title` (body)     | Required, min 3 characters |
-| `PUT /:task_id`             | `task_id` (param)  | Valid UUID                 |
-|                             | `title` (body)     | Required, min 3 characters |
-| `DELETE /:task_id`          | `task_id` (param)  | Valid UUID                 |
+| Endpoint                    | Field                | Rules                      |
+| --------------------------- | -------------------- | -------------------------- |
+| `POST /`                    | `title` (body)       | Required, min 3 characters |
+| `GET /:task_id`             | `task_id` (param)    | Valid UUID                 |
+| `GET /title/:task_title`    | `task_title` (param) | Required                   |
+| `PATCH /:task_id`           | `task_id` (param)    | Valid UUID                 |
+|                             | `title` (body)       | Required, min 3 characters |
+| `PUT /:task_id`             | `task_id` (param)    | Valid UUID                 |
+|                             | `title` (body)       | Required, min 3 characters |
+| `DELETE /:task_id`          | `task_id` (param)    | Valid UUID                 |
 
 **Validation error response** `400 Bad Request`
 
@@ -257,6 +279,7 @@ Powered by [`express-validator`](https://express-validator.github.io/). Validati
 
 ## Notes
 
-- Tasks are stored **in-memory** — data resets when the server restarts. To persist data, replace `data/tasks.js` with a database integration.
+- Tasks are currently stored **in-memory** — data resets when the server restarts. The MongoDB Atlas connection is in place in `server.js`; replace the in-memory data store in `services/tasks.services.js` with DB calls to enable full persistence.
 - Task IDs are generated using `crypto.randomUUID()`.
 - The API follows a **Service Layer** pattern — controllers handle HTTP concerns while services contain all business logic.
+- Port is configurable via the `PORT` variable in `.env`.
