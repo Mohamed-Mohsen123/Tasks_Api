@@ -3,7 +3,11 @@ const Status = require("../utils/httpStatusText.js");
 
 // GET all tasks
 const getTasks = async (req, res) => {
-  const tasks = await tasksServices.GetAllTasks();
+  const query = req.query;
+  const limit = query.limit || 2;
+  const page = query.page || 1;
+  const skip = (page - 1) * limit;
+  const tasks = await tasksServices.GetAllTasks(limit, skip);
   res.status(200).json({
     status: Status.SUCCSES,
     data: { tasks },

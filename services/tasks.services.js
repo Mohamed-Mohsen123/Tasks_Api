@@ -1,16 +1,16 @@
 const crypto = require("crypto");
 const Task = require("../model/tasks.model");
 
-async function GetAllTasks() {
-  return await Task.find();
+async function GetAllTasks(limit, skip) {
+  return await Task.find().select("-__v -_id").limit(limit).skip(skip);
 }
 
 async function getTask(taskId) {
-  return await Task.findOne({ id: taskId });
+  return await Task.findOne({ id: taskId }).select("-__v -_id");
 }
 
 async function GetTaskTitle(taskTitle) {
-  return await Task.findOne({ title: taskTitle });
+  return await Task.findOne({ title: taskTitle }).select("-__v -_id");
 }
 
 async function createTask(taskData) {

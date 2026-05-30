@@ -20,13 +20,13 @@ router
   .post("/", validationSchemas.createTask, handleValidationErrors, createTask);
 
 router
-  .get("/:task_id", validationSchemas.getTask, handleValidationErrors, getTask)
   .get(
     "/title/:task_title",
     validationSchemas.getTaskTitle,
     handleValidationErrors,
     getTaskTitle,
   )
+  .get("/:task_id", validationSchemas.getTask, handleValidationErrors, getTask)
   .delete(
     "/:task_id",
     validationSchemas.deleteTask,
@@ -39,11 +39,6 @@ router
     handleValidationErrors,
     updateTask,
   )
-  .put(
-    "/:task_id",
-    validationSchemas.putTask,
-    handleValidationErrors,
-    putTask,
-  );
+  .put("/:task_id", validationSchemas.putTask, handleValidationErrors, putTask);
 
 module.exports = router;
