@@ -1,8 +1,10 @@
 const tasksServices = require("../services/tasks.services.js");
 const Status = require("../utils/httpStatusText.js");
+const asyncWrapper = require("../middlewares/asyncwrapper.middleware.js");
+const AppError = require("../utils/appError.js");
 
 // GET all tasks
-const getTasks = async (req, res) => {
+const getTasks = asyncWrapper(async (req, res) => {
   const query = req.query;
   const limit = query.limit || 2;
   const page = query.page || 1;
@@ -12,110 +14,92 @@ const getTasks = async (req, res) => {
     status: Status.SUCCSES,
     data: { tasks },
   });
-};
+});
 
 // Get specific task by id
-const getTask = async (req, res) => {
+const getTask = asyncWrapper(async (req, res, next) => {
   const taskId = req.params.task_id;
   const task = await tasksServices.getTask(taskId);
 
   if (!task) {
-    return res.status(404).json({
-      status: Status.FAIL,
-      data: { message: "task not found (wrong id number)" },
-    });
+    return next(new AppError("task not found (wrong id number)", 404, Status.FAIL));
   }
   res.status(200).json({
     status: Status.SUCCSES,
     data: { task },
   });
-};
+});
 
 // Get specific task by title
-const getTaskTitle = async (req, res) => {
+const getTaskTitle = asyncWrapper(async (req, res, next) => {
   const taskTitle = req.params.task_title;
   const task = await tasksServices.GetTaskTitle(taskTitle);
 
   if (!task) {
-    return res.status(404).json({
-      status: Status.FAIL,
-      data: { message: "task not found (wrong title)" },
-    });
+    return next(new AppError("task not found (wrong title)", 404, Status.FAIL));
   }
   res.status(200).json({
     status: Status.SUCCSES,
     data: { task },
   });
-};
+});
 
 // POST - Create a new task
-const createTask = async (req, res) => {
+const createTask = asyncWrapper(async (req, res, next) => {
   const result = await tasksServices.createTask(req.body);
   if (result.error) {
-    return res.status(400).json({
-      status: Status.FAIL,
-      data: { message: result.error },
-    });
+    return next(new AppError(result.error, 400, Status.FAIL));
   }
   res.status(201).json({
     status: Status.SUCCSES,
     data: { task: result.task },
   });
-};
+});
 
 // DELETE - Delete a task by ID
-const deleteTask = async (req, res) => {
+const deleteTask = asyncWrapper(async (req, res, next) => {
   const taskId = req.params.task_id;
   const result = await tasksServices.deleteTask(taskId);
 
   if (result.error) {
-    return res.status(404).json({
-      status: Status.FAIL,
-      data: { message: result.error },
-    });
+    return next(new AppError(result.error, 404, Status.FAIL));
   }
 
   res.status(200).json({
     status: Status.SUCCSES,
     data: null,
   });
-};
+});
 
 // PATCH - Update a task by ID
-const updateTask = async (req, res) => {
+const updateTask = asyncWrapper(async (req, res, next) => {
   const taskId = req.params.task_id;
   const result = await tasksServices.updateTask(taskId, req.body);
 
   if (result.error) {
-    return res.status(404).json({
-      status: Status.FAIL,
-      data: { message: result.error },
-    });
+    return next(new AppError(result.error, 404, Status.FAIL));
   }
 
   res.status(200).json({
     status: Status.SUCCSES,
     data: { task: result.task },
   });
-};
+});
 
 // PUT - Replace a task by ID
-const putTask = async (req, res) => {
+const putTask = asyncWrapper(async (req, res, next) => {
   const taskId = req.params.task_id;
   const result = await tasksServices.putTask(taskId, req.body);
 
   if (result.error) {
-    return res.status(404).json({
-      status: Status.FAIL,
-      data: { message: result.error },
-    });
+    return next(new AppError(result.error, 404, Status.FAIL));
   }
 
   res.status(200).json({
     status: Status.SUCCSES,
     data: { task: result.task },
   });
-};
+});
 
 module.exports = {
   getTasks,

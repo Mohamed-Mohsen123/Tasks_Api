@@ -24,10 +24,20 @@ mongoose
 app.use(cors());
 app.use(express.json());
 app.use("/tasksApi", tasksRouter);
+
+//global middleware for not found routes
 app.use((req, res) => {
   res.status(404).json({
     status: status.FAIL,
     data: "Route not found",
+  });
+});
+
+//global error handler
+app.use((error, req, res, next) => {
+  res.status(error.statusCode || 500).json({
+    status: error.status || status.ERROR,
+    data: { message: error.message || "internal server error" },
   });
 });
 
