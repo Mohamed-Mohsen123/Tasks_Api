@@ -1,7 +1,10 @@
+const bcrypt = require("bcryptjs");
 const User = require("../models/users.model");
 const Status = require("../utils/httpStatusText");
 const asyncWrapper = require("../middlewares/asyncwrapper.middleware");
 const AppError = require("../utils/appError");
+
+const SALT_ROUNDS = 10;
 
 function formatUser(user) {
   return {
@@ -27,7 +30,10 @@ const register = asyncWrapper(async (req, res, next) => {
     return next(new AppError("email already exists", 400, Status.FAIL));
   }
 
-  const user = new User(req.body);
+  const user = new User({
+    ...req.body,
+    password: await bcrypt.hash(req.body.password, SALT_ROUNDS),
+  });
   await user.save();
 
   res.status(201).json({
@@ -40,7 +46,7 @@ const signIn = asyncWrapper(async (req, res, next) => {
   const { email, password } = req.body;
   const user = await User.findOne({ email });
 
-  if (!user || user.password !== password) {
+  if (!user || !(await bcrypt.compare(password, user.password))) {
     return next(new AppError("invalid email or password", 401, Status.FAIL));
   }
 
