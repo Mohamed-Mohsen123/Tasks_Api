@@ -1,5 +1,5 @@
 const crypto = require("crypto");
-const Task = require("../model/tasks.model");
+const Task = require("../models/tasks.model");
 
 async function GetAllTasks(limit, skip) {
   return await Task.find().select("-__v -_id").limit(limit).skip(skip);
