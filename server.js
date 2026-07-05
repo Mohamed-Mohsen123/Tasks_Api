@@ -2,6 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const tasksRouter = require("./routes/tasks.routes");
+const usersRouter = require("./routes/users.routes");
 const status = require("./utils/httpStatusText");
 require("dotenv").config();
 const app = express();
@@ -24,6 +25,7 @@ mongoose
 app.use(cors());
 app.use(express.json());
 app.use("/tasksApi", tasksRouter);
+app.use("/usersApi", usersRouter);
 
 //global middleware for not found routes
 app.use((req, res) => {
