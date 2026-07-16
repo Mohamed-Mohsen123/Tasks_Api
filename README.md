@@ -1,6 +1,6 @@
 # Tasks API
 
-A RESTful API built with **Node.js** and **Express** for managing tasks. Supports creating, reading, updating, and deleting tasks with input validation middleware and a dedicated service layer. Uses **MongoDB** with **Mongoose** ODM for persistent data storage and **crypto UUID** for unique task identifiers. All responses follow the **JSend** format and errors are handled centrally via a global error handler.
+A RESTful API built with **Node.js** and **Express** for managing tasks. Supports creating, reading, updating, and deleting tasks with input validation middleware and a dedicated service layer. Uses **MongoDB** with **Mongoose** ODM for persistent data storage and **crypto UUID** for unique task identifiers. Includes user registration/sign-in with **bcrypt** password hashing and **JWT**-based authentication for protected routes. All responses follow the **JSend** format and errors are handled centrally via a global error handler.
 
 ---
 
@@ -9,21 +9,28 @@ A RESTful API built with **Node.js** and **Express** for managing tasks. Support
 ```
 tasks-api/
 ├── controllers/
-│   └── tasks.controller.js       # Request handlers (delegates to services)
+│   ├── tasks.controller.js        # Request handlers (delegates to services)
+│   └── users.controller.js        # Request handlers for auth/user endpoints
 ├── middlewares/
 │   ├── asyncwrapper.middleware.js # Wraps async handlers, forwards errors to next()
-│   └── tasks.middlwares.js        # Validation schemas & error handling
-├── model/
-│   └── tasks.model.js             # Mongoose schema & model definition
+│   ├── auth.middleware.js         # Verifies JWT from Authorization header
+│   ├── tasks.middlwares.js        # Validation schemas & error handling (tasks)
+│   └── users.middlewares.js       # Validation schemas & error handling (users)
+├── models/
+│   ├── tasks.model.js             # Mongoose schema & model definition
+│   └── users.model.js             # Mongoose schema & model definition (users)
 ├── routes/
-│   └── tasks.routes.js            # Route definitions
+│   ├── tasks.routes.js            # Route definitions
+│   └── users.routes.js            # Route definitions (register, signin, get users)
 ├── services/
-│   └── tasks.services.js          # Business logic & database operations
+│   ├── tasks.services.js          # Business logic & database operations
+│   └── users.services.js          # Business logic for register/sign-in/list users
 ├── utils/
 │   ├── appError.js                # Custom AppError class
-│   └── httpStatusText.js          # JSend status constants (SUCCESS, FAIL, ERROR)
+│   ├── httpStatusText.js          # JSend status constants (SUCCESS, FAIL, ERROR)
+│   └── token.js                   # JWT creation helper (createToken)
 ├── server.js                      # App entry point, MongoDB connection & global handlers
-├── .env                           # Environment variables (PORT, MONGO_URI)
+├── .env                           # Environment variables (PORT, MONGO_URI, JWT_SECRET, JWT_EXPIRES_IN)
 ├── package.json
 └── README.md
 ```
@@ -80,15 +87,17 @@ Server running on port 3000
 
 ## Tech Stack
 
-| Package             | Version  | Purpose                         |
-| ------------------- | -------- | ------------------------------- |
-| `express`           | ^5.2.1   | HTTP server & routing           |
-| `express-validator` | ^7.3.2   | Request validation              |
-| `mongoose`          | ^8.x.x   | MongoDB ODM & schema validation |
-| `mongodb`           | ^6.x.x   | MongoDB driver                  |
-| `cors`              | ^2.x.x   | Cross-origin resource sharing   |
-| `dotenv`            | ^17.4.2  | Environment variable loading    |
-| `crypto`            | Built-in | UUID generation for task IDs    |
+| Package             | Version  | Purpose                            |
+| ------------------- | -------- | ---------------------------------- |
+| `express`           | ^5.2.1   | HTTP server & routing              |
+| `express-validator` | ^7.3.2   | Request validation                 |
+| `mongoose`          | ^9.6.3   | MongoDB ODM & schema validation    |
+| `mongodb`           | ^6.x.x   | MongoDB driver                     |
+| `cors`              | ^2.x.x   | Cross-origin resource sharing      |
+| `dotenv`            | ^17.4.2  | Environment variable loading       |
+| `bcryptjs`          | ^3.0.3   | Password hashing                   |
+| `jsonwebtoken`      | ^9.0.3   | JWT creation & verification        |
+| `crypto`            | Built-in | UUID generation for task/user IDs  |
 
 ---
 
@@ -159,6 +168,106 @@ POST /usersApi/register
   }
 }
 ```
+
+**Error** `400 Bad Request` — e.g. duplicate email
+
+```json
+{
+  "status": "fail",
+  "data": { "message": "email already exists" }
+}
+```
+
+---
+
+### Sign In
+
+```
+POST /usersApi/signin
+```
+
+**Request Body**
+
+```json
+{
+  "email": "jane@example.com",
+  "password": "secure-password"
+}
+```
+
+**Response** `200 OK`
+
+```json
+{
+  "status": "sucsses",
+  "data": {
+    "user": {
+      "id": "uuid",
+      "name": "Jane Doe",
+      "email": "jane@example.com"
+    },
+    "token": "eyJ..."
+  }
+}
+```
+
+**Error** `401 Unauthorized`
+
+```json
+{
+  "status": "fail",
+  "data": { "message": "invalid email or password" }
+}
+```
+
+---
+
+### Get All Users 🔒
+
+```
+GET /usersApi/
+```
+
+Requires a valid JWT — see [Authentication](#authentication).
+
+**Response** `200 OK`
+
+```json
+{
+  "status": "sucsses",
+  "data": {
+    "users": [
+      { "name": "Jane Doe", "email": "jane@example.com", "createdAt": "...", "updatedAt": "..." }
+    ]
+  }
+}
+```
+
+**Error** `401 Unauthorized`
+
+```json
+{
+  "status": "fail",
+  "data": { "message": "no token provided" }
+}
+```
+
+---
+
+## Authentication
+
+User endpoints issue a **JWT** on register/sign-in. Protected endpoints require it in the `Authorization` header:
+
+```
+Authorization: Bearer <token>
+```
+
+- Tokens are signed with `JWT_SECRET` and expire after `JWT_EXPIRES_IN` (default `1d`), both read from `.env`.
+- `utils/token.js` exposes `createToken(user)`, used by `registerUser` and `signIn` in `services/users.services.js`.
+- `middlewares/auth.middleware.js` verifies the token on protected routes, attaches the decoded payload to `req.user`, and forwards a `401` `AppError` (`no token provided` / `invalid or expired token`) when verification fails.
+- Currently protected: `GET /usersApi/`.
+
+---
 
 ### Get All Tasks
 
@@ -403,6 +512,16 @@ Powered by [`express-validator`](https://express-validator.github.io/). Validati
 |                          | `title` (body)       | Required, min 3 characters |
 | `DELETE /:task_id`       | `task_id` (param)    | Valid UUID                 |
 
+**User endpoints** (`/usersApi`)
+
+| Endpoint         | Field            | Rules                              |
+| ----------------- | ---------------- | ----------------------------------- |
+| `POST /register`  | `name` (body)    | Required, min 3 characters          |
+|                    | `email` (body)   | Required, valid email               |
+|                    | `password` (body)| Required, min 6 characters          |
+| `POST /signin`    | `email` (body)   | Required, valid email               |
+|                    | `password` (body)| Required                            |
+
 **Validation error response** `400 Bad Request`
 
 ```json
@@ -478,3 +597,5 @@ const getTasks = asyncWrapper(async (req, res) => {
 - **CORS**: Cross-origin requests are enabled globally via the `cors` middleware.
 - **Port Configuration**: Port is configurable via the `PORT` variable in `.env`.
 - **Database Connection**: MongoDB connection is established in `server.js` on server startup with automatic error handling and process exit on failure.
+- **Password Hashing**: User passwords are hashed with `bcryptjs` (10 salt rounds) before being stored; plaintext passwords are never persisted or returned in responses.
+- **JWT Authentication**: `POST /usersApi/register` and `POST /usersApi/signin` return a signed JWT. Protected routes (e.g. `GET /usersApi/`) require it via `Authorization: Bearer <token>` — see [Authentication](#authentication).
