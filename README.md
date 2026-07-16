@@ -53,6 +53,8 @@ Create a `.env` file in the root directory:
 ```env
 PORT=3000
 MONGO_URI=mongodb://localhost:27017/tasks
+JWT_SECRET=replace-with-a-long-random-secret
+JWT_EXPIRES_IN=1d
 ```
 
 For MongoDB Atlas, use a connection string:
@@ -123,6 +125,40 @@ All API responses follow the **JSend** specification with a consistent envelope:
 ## API Reference
 
 All endpoints are prefixed with `/tasksApi`.
+
+User endpoints are prefixed with `/usersApi`.
+
+### Register a User
+
+```
+POST /usersApi/register
+```
+
+**Request Body**
+
+```json
+{
+  "name": "Jane Doe",
+  "email": "jane@example.com",
+  "password": "secure-password"
+}
+```
+
+**Response** `201 Created`
+
+```json
+{
+  "status": "sucsses",
+  "data": {
+    "user": {
+      "id": "uuid",
+      "name": "Jane Doe",
+      "email": "jane@example.com"
+    },
+    "token": "eyJ..."
+  }
+}
+```
 
 ### Get All Tasks
 
