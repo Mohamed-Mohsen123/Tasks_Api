@@ -14,10 +14,16 @@ const {
   validationSchemas,
   handleValidationErrors,
 } = require("../middlewares/tasks.middlwares");
+const isAdmin = require("../utils/isAdmin");
 
 router
   .get("/", getTasks)
-  .post("/", validationSchemas.createTask, handleValidationErrors, createTask);
+  .post(
+    "/",
+    validationSchemas.createTask,
+    handleValidationErrors,
+    createTask,
+  );
 
 router
   .get(
@@ -31,6 +37,7 @@ router
     "/:task_id",
     validationSchemas.deleteTask,
     handleValidationErrors,
+    isAdmin,
     deleteTask,
   )
   .patch(

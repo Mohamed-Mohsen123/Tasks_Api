@@ -18,6 +18,13 @@ async function registerUser(userData) {
     ...userData,
     password: await bcrypt.hash(userData.password, SALT_ROUNDS),
   });
+
+  try {
+    await user.validate();
+  } catch (err) {
+    return { error: err.message };
+  }
+
   const token = createToken(user);
   await user.save();
   return { success: true, user, token };

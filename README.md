@@ -28,6 +28,7 @@ tasks-api/
 ├── utils/
 │   ├── appError.js                # Custom AppError class
 │   ├── httpStatusText.js          # JSend status constants (SUCCESS, FAIL, ERROR)
+│   ├── isAdmin.js                 # Middleware requiring req.user.role === "admin"
 │   └── token.js                   # JWT creation helper (createToken)
 ├── server.js                      # App entry point, MongoDB connection & global handlers
 ├── .env                           # Environment variables (PORT, MONGO_URI, JWT_SECRET, JWT_EXPIRES_IN)
@@ -162,7 +163,8 @@ POST /usersApi/register
     "user": {
       "id": "uuid",
       "name": "Jane Doe",
-      "email": "jane@example.com"
+      "email": "jane@example.com",
+      "role": "user"
     },
     "token": "eyJ..."
   }
@@ -204,7 +206,8 @@ POST /usersApi/signin
     "user": {
       "id": "uuid",
       "name": "Jane Doe",
-      "email": "jane@example.com"
+      "email": "jane@example.com",
+      "role": "user"
     },
     "token": "eyJ..."
   }
@@ -262,10 +265,12 @@ User endpoints issue a **JWT** on register/sign-in. Protected endpoints require 
 Authorization: Bearer <token>
 ```
 
-- Tokens are signed with `JWT_SECRET` and expire after `JWT_EXPIRES_IN` (default `1d`), both read from `.env`.
+- Tokens are signed with `JWT_SECRET` and expire after `JWT_EXPIRES_IN` (default `1d`), both read from `.env`. The signed payload includes the user's `id`, `email`, and `role`.
 - `utils/token.js` exposes `createToken(user)`, used by `registerUser` and `signIn` in `services/users.services.js`.
-- `middlewares/auth.middleware.js` verifies the token on protected routes, attaches the decoded payload to `req.user`, and forwards a `401` `AppError` (`no token provided` / `invalid or expired token`) when verification fails.
-- Currently protected: `GET /usersApi/`.
+- `middlewares/auth.middleware.js` verifies the token, attaches the decoded payload to `req.user`, and forwards a `401` `AppError` (`no token provided` / `invalid or expired token`) when verification fails.
+- Token verification is applied **globally** in `server.js` to every route except the public paths `POST /usersApi/register` and `POST /usersApi/signin`.
+- `utils/isAdmin.js` additionally requires `req.user.role === "admin"` on top of a valid token, forwarding a `403` `AppError` (`admin access required`) otherwise. Currently applied to `DELETE /tasksApi/:task_id`.
+- Every user has a `role` of `"admin"` or `"user"` (default `"user"`), stored on the user model and validated on register.
 
 ---
 
@@ -471,11 +476,13 @@ Fully replaces the task data while preserving the original ID.
 
 ---
 
-### Delete a Task
+### Delete a Task 🔒 (admin only)
 
 ```
 DELETE /tasksApi/:task_id
 ```
+
+Requires a valid JWT for a user with `role: "admin"` — see [Authentication](#authentication).
 
 **Response** `200 OK`
 
@@ -483,6 +490,15 @@ DELETE /tasksApi/:task_id
 {
   "status": "sucsses",
   "data": null
+}
+```
+
+**Error** `403 Forbidden` — caller is not an admin
+
+```json
+{
+  "status": "fail",
+  "data": { "message": "admin access required" }
 }
 ```
 
@@ -598,4 +614,5 @@ const getTasks = asyncWrapper(async (req, res) => {
 - **Port Configuration**: Port is configurable via the `PORT` variable in `.env`.
 - **Database Connection**: MongoDB connection is established in `server.js` on server startup with automatic error handling and process exit on failure.
 - **Password Hashing**: User passwords are hashed with `bcryptjs` (10 salt rounds) before being stored; plaintext passwords are never persisted or returned in responses.
-- **JWT Authentication**: `POST /usersApi/register` and `POST /usersApi/signin` return a signed JWT. Protected routes (e.g. `GET /usersApi/`) require it via `Authorization: Bearer <token>` — see [Authentication](#authentication).
+- **JWT Authentication**: `POST /usersApi/register` and `POST /usersApi/signin` return a signed JWT and are the only public routes. Every other route requires it via `Authorization: Bearer <token>` — see [Authentication](#authentication).
+- **Role-Based Access**: Users have a `role` (`"admin"` or `"user"`, default `"user"`). `DELETE /tasksApi/:task_id` additionally requires the caller's role to be `"admin"`.

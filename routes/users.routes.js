@@ -10,9 +10,8 @@ const {
   validationSchemas,
   handleValidationErrors,
 } = require("../middlewares/users.middlewares");
-const verifyToken = require("../middlewares/auth.middleware");
 
-router.get("/", verifyToken, getUsers);
+router.get("/", getUsers);
 
 router.post(
   "/register",

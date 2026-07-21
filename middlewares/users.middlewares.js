@@ -30,6 +30,10 @@ const validationSchemas = {
       .withMessage("Password is required")
       .isLength({ min: 6 })
       .withMessage("Password must be at least 6 characters long"),
+    body("role")
+      .optional()
+      .isIn(["admin", "user"])
+      .withMessage("Role must be either 'admin' or 'user'"),
   ],
   signIn: [
     body("email")
