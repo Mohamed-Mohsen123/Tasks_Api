@@ -1,5 +1,5 @@
-const AppError = require("./appError");
-const Status = require("./httpStatusText");
+const AppError = require("../utils/appError");
+const Status = require("../utils/httpStatusText");
 
 function isAdmin(req, res, next) {
   if (req.user?.role !== "admin") {
