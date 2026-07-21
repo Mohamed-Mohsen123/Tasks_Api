@@ -27,6 +27,7 @@ mongoose
 
 app.use(cors());
 app.use(express.json());
+app.use("/uploads", express.static("uploads"));
 
 app.use((req, res, next) => {
   if (PUBLIC_PATHS.includes(req.path)) {

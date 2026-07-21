@@ -9,6 +9,7 @@ function formatUser(user) {
     name: user.name,
     email: user.email,
     role: user.role,
+    photo: user.photo,
     createdAt: user.createdAt,
     updatedAt: user.updatedAt,
   };
@@ -23,7 +24,11 @@ const getUsers = asyncWrapper(async (req, res) => {
 });
 
 const register = asyncWrapper(async (req, res, next) => {
-  const result = await usersServices.registerUser(req.body);
+  const userData = { ...req.body };
+  if (req.file) {
+    userData.photo = `uploads/${req.file.filename}`;
+  }
+  const result = await usersServices.registerUser(userData);
   if (result.error) {
     return next(new AppError(result.error, 400, Status.FAIL));
   }

@@ -16,6 +16,7 @@ tasks-api/
 │   ├── auth.middleware.js         # Verifies JWT from Authorization header
 │   ├── isAdmin.js                 # Middleware requiring req.user.role === "admin"
 │   ├── tasks.middlwares.js        # Validation schemas & error handling (tasks)
+│   ├── upload.middleware.js       # Multer config: image-only, 5MB limit, saves to uploads/
 │   └── users.middlewares.js       # Validation schemas & error handling (users)
 ├── models/
 │   ├── tasks.model.js             # Mongoose schema & model definition
@@ -30,6 +31,7 @@ tasks-api/
 │   ├── appError.js                # Custom AppError class
 │   ├── httpStatusText.js          # JSend status constants (SUCCESS, FAIL, ERROR)
 │   └── token.js                   # JWT creation helper (createToken)
+├── uploads/                       # Uploaded profile photos (gitignored)
 ├── server.js                      # App entry point, MongoDB connection & global handlers
 ├── .env                           # Environment variables (PORT, MONGO_URI, JWT_SECRET, JWT_EXPIRES_IN)
 ├── package.json
@@ -98,6 +100,7 @@ Server running on port 3000
 | `dotenv`            | ^17.4.2  | Environment variable loading       |
 | `bcryptjs`          | ^3.0.3   | Password hashing                   |
 | `jsonwebtoken`      | ^9.0.3   | JWT creation & verification        |
+| `multer`            | ^2.2.0   | Multipart form parsing & image upload |
 | `crypto`            | Built-in | UUID generation for task/user IDs  |
 
 ---
@@ -144,6 +147,8 @@ User endpoints are prefixed with `/usersApi`.
 POST /usersApi/register
 ```
 
+Accepts either `application/json` or `multipart/form-data`. Use `multipart/form-data` to optionally attach a profile photo via the `photo` field — only image files are accepted (validated by MIME type), max 5MB, and are stored on disk in `uploads/`.
+
 **Request Body**
 
 ```json
@@ -153,6 +158,8 @@ POST /usersApi/register
   "password": "secure-password"
 }
 ```
+
+Or, as `multipart/form-data`: `name`, `email`, `password` fields plus an optional `photo` file field.
 
 **Response** `201 Created`
 
@@ -164,12 +171,15 @@ POST /usersApi/register
       "id": "uuid",
       "name": "Jane Doe",
       "email": "jane@example.com",
-      "role": "user"
+      "role": "user",
+      "photo": "uploads/<generated-filename>.png"
     },
     "token": "eyJ..."
   }
 }
 ```
+
+`photo` is `null` when no file was uploaded. Uploaded files are served statically at `GET /uploads/<filename>`.
 
 **Error** `400 Bad Request` — e.g. duplicate email
 
@@ -177,6 +187,15 @@ POST /usersApi/register
 {
   "status": "fail",
   "data": { "message": "email already exists" }
+}
+```
+
+**Error** `400 Bad Request` — non-image file uploaded as `photo`
+
+```json
+{
+  "status": "fail",
+  "data": { "message": "only image files are allowed" }
 }
 ```
 

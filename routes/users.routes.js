@@ -10,11 +10,13 @@ const {
   validationSchemas,
   handleValidationErrors,
 } = require("../middlewares/users.middlewares");
+const upload = require("../middlewares/upload.middleware");
 
 router.get("/", getUsers);
 
 router.post(
   "/register",
+  upload,
   validationSchemas.register,
   handleValidationErrors,
   register,
