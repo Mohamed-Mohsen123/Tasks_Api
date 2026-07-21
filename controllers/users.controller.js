@@ -16,9 +16,16 @@ function formatUser(user) {
 }
 
 const getUsers = asyncWrapper(async (req, res) => {
-  const users = await usersServices.getAllUsers();
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
+  const skip = (page - 1) * limit;
+
+  const { users, total } = await usersServices.getAllUsers({ limit, skip });
+  const totalPages = Math.ceil(total / limit);
+
   res.status(200).json({
     status: Status.SUCCSES,
+    pagination: { total, totalPages, currentPage: page, limit },
     data: { users },
   });
 });

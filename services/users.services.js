@@ -4,8 +4,12 @@ const createToken = require("../utils/token");
 
 const SALT_ROUNDS = 10;
 
-async function getAllUsers() {
-  return await User.find().select("-__v -_id -password");
+async function getAllUsers({ limit, skip }) {
+  const [users, total] = await Promise.all([
+    User.find().select("-__v -_id -password").limit(limit).skip(skip),
+    User.countDocuments(),
+  ]);
+  return { users, total };
 }
 
 async function registerUser(userData) {
