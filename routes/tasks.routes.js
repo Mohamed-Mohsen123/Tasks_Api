@@ -14,7 +14,7 @@ const {
   validationSchemas,
   handleValidationErrors,
 } = require("../middlewares/tasks.middlwares");
-const isAdmin = require("../utils/isAdmin");
+const isAdmin = require("../middlewares/isAdmin");
 
 router
   .get("/", getTasks)

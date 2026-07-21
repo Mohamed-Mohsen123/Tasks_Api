@@ -14,6 +14,7 @@ tasks-api/
 ├── middlewares/
 │   ├── asyncwrapper.middleware.js # Wraps async handlers, forwards errors to next()
 │   ├── auth.middleware.js         # Verifies JWT from Authorization header
+│   ├── isAdmin.js                 # Middleware requiring req.user.role === "admin"
 │   ├── tasks.middlwares.js        # Validation schemas & error handling (tasks)
 │   └── users.middlewares.js       # Validation schemas & error handling (users)
 ├── models/
@@ -28,7 +29,6 @@ tasks-api/
 ├── utils/
 │   ├── appError.js                # Custom AppError class
 │   ├── httpStatusText.js          # JSend status constants (SUCCESS, FAIL, ERROR)
-│   ├── isAdmin.js                 # Middleware requiring req.user.role === "admin"
 │   └── token.js                   # JWT creation helper (createToken)
 ├── server.js                      # App entry point, MongoDB connection & global handlers
 ├── .env                           # Environment variables (PORT, MONGO_URI, JWT_SECRET, JWT_EXPIRES_IN)
@@ -269,7 +269,7 @@ Authorization: Bearer <token>
 - `utils/token.js` exposes `createToken(user)`, used by `registerUser` and `signIn` in `services/users.services.js`.
 - `middlewares/auth.middleware.js` verifies the token, attaches the decoded payload to `req.user`, and forwards a `401` `AppError` (`no token provided` / `invalid or expired token`) when verification fails.
 - Token verification is applied **globally** in `server.js` to every route except the public paths `POST /usersApi/register` and `POST /usersApi/signin`.
-- `utils/isAdmin.js` additionally requires `req.user.role === "admin"` on top of a valid token, forwarding a `403` `AppError` (`admin access required`) otherwise. Currently applied to `DELETE /tasksApi/:task_id`.
+- `middlewares/isAdmin.js` additionally requires `req.user.role === "admin"` on top of a valid token, forwarding a `403` `AppError` (`admin access required`) otherwise. Currently applied to `DELETE /tasksApi/:task_id`.
 - Every user has a `role` of `"admin"` or `"user"` (default `"user"`), stored on the user model and validated on register.
 
 ---
