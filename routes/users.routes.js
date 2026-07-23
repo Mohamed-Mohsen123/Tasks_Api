@@ -11,8 +11,9 @@ const {
   handleValidationErrors,
 } = require("../middlewares/users.middlewares");
 const upload = require("../middlewares/upload.middleware");
+const verifyToken = require("../middlewares/auth.middleware");
 
-router.get("/", getUsers);
+router.get("/", verifyToken, getUsers);
 
 router.post(
   "/register",

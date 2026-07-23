@@ -4,11 +4,8 @@ const cors = require("cors");
 const tasksRouter = require("./routes/tasks.routes");
 const usersRouter = require("./routes/users.routes");
 const status = require("./utils/httpStatusText");
-const verifyToken = require("./middlewares/auth.middleware");
 require("dotenv").config();
 const app = express();
-
-const PUBLIC_PATHS = ["/usersApi/register", "/usersApi/signin"];
 
 const PORT = process.env.PORT;
 const MONGO_URI = process.env.MONGO_URI;
@@ -28,13 +25,6 @@ mongoose
 app.use(cors());
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
-
-app.use((req, res, next) => {
-  if (PUBLIC_PATHS.includes(req.path)) {
-    return next();
-  }
-  return verifyToken(req, res, next);
-});
 
 app.use("/tasksApi", tasksRouter);
 app.use("/usersApi", usersRouter);

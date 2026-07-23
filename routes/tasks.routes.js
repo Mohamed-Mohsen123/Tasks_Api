@@ -15,11 +15,13 @@ const {
   handleValidationErrors,
 } = require("../middlewares/tasks.middlwares");
 const isAdmin = require("../middlewares/isAdmin");
+const verifyToken = require("../middlewares/auth.middleware");
 
 router
-  .get("/", getTasks)
+  .get("/", verifyToken, getTasks)
   .post(
     "/",
+    verifyToken,
     validationSchemas.createTask,
     handleValidationErrors,
     createTask,
@@ -28,13 +30,21 @@ router
 router
   .get(
     "/title/:task_title",
+    verifyToken,
     validationSchemas.getTaskTitle,
     handleValidationErrors,
     getTaskTitle,
   )
-  .get("/:task_id", validationSchemas.getTask, handleValidationErrors, getTask)
+  .get(
+    "/:task_id",
+    verifyToken,
+    validationSchemas.getTask,
+    handleValidationErrors,
+    getTask,
+  )
   .delete(
     "/:task_id",
+    verifyToken,
     validationSchemas.deleteTask,
     handleValidationErrors,
     isAdmin,
@@ -42,10 +52,17 @@ router
   )
   .patch(
     "/:task_id",
+    verifyToken,
     validationSchemas.updateTask,
     handleValidationErrors,
     updateTask,
   )
-  .put("/:task_id", validationSchemas.putTask, handleValidationErrors, putTask);
+  .put(
+    "/:task_id",
+    verifyToken,
+    validationSchemas.putTask,
+    handleValidationErrors,
+    putTask,
+  );
 
 module.exports = router;
